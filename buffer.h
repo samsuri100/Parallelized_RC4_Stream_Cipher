@@ -4,32 +4,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct dynamicBuff{
-    char buffer[100];
-} dynamicBuff;
+#define INITIAL_CAPACITY 1000
+#define INCREASE_AMOUNT 1000
 
 typedef struct dynamicData{
-    dynamicBuff* buff;
+    char* buff;
     int fullCounter;
     int currentCapacity;
     int increaseAmount;
     char* fileName;
+    char finishedBool;
+    char readMutex;
 } dynamicData;
 
 void growBuff(dynamicData* buffObj){
+    buffObj->readMutex = 0;
+    
     buffObj->currentCapacity += buffObj->increaseAmount;
-    buffObj->buff = (dynamicBuff*) realloc(buffObj->buff->buffer, sizeof(dynamicBuff)+(buffObj->currentCapacity));
+    buffObj->buff = (char*) realloc(buffObj->buff, buffObj->currentCapacity);
 }
 
-void checkBufferContents(dynamicData* buffObj){
+void debugCheckBufferContents(dynamicData* buffObj){
     int i;
 
     printf("BUFFER OUTPUT:\n");
 
     for(i = 0; i < buffObj->fullCounter; ++i)
-        printf("%c", buffObj->buff->buffer[i]);
+        printf("%c", buffObj->buff[i]);
 
     printf("BUFFER OUTPUT FINISHED\n");
+}
+
+void writeToDynamicBuffer(dynamicData* keyBuffObj, char keyByte){
+    if(keyBuffObj->fullCounter == keyBuffObj->currentCapacity){
+        keyBuffObj->readMutex = 0;
+        growBuff(keyBuffObj);
+    }
+   
+    keyBuffObj->readMutex = 1;
+
+    keyBuffObj->buff[keyBuffObj->fullCounter] = keyByte;
+    keyBuffObj->fullCounter += 1;
 }
 
 #endif
