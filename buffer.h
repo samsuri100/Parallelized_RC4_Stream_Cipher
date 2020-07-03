@@ -48,7 +48,7 @@ void debugCheckBufferContents(dynamicData* buffObj){
     printf("BUFFER OUTPUT FINISHED\n");
 }
 
-//Function adds RC4 keystream bytes to dynamicData object buffer
+//Function adds RC4 key stream byte to dynamicData object buffer
 //If buffer reaches capacity, reallocates more memory for buffer
 void writeToDynamicBuffer(dynamicData* keyBuffObj, char keyByte){
     //Reallocating more memory for buffer
@@ -57,11 +57,11 @@ void writeToDynamicBuffer(dynamicData* keyBuffObj, char keyByte){
   
         //Un-Setting mutex, allows external reading from other threads 
         //Number is 2, and not 1, because writeOutput thread would mistake '1' while 
-        //reading in key from file and run, before the key has generated the keystream
+        //reading in key from file and run, before the key has generated the key stream
         keyBuffObj->readMutex = 2;
     }
 
-    //Adding keystream byte to array
+    //Adding key stream byte to array
     keyBuffObj->buff[keyBuffObj->fullCounter] = keyByte;
     keyBuffObj->fullCounter += 1;
 }

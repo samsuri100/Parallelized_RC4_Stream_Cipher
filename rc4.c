@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv){
     pthread_t readTextFileInitial_ID, rc4Alg_ID, writeOutput_ID;
-
+    
     //User must pass in minimum of 3 command line arguments
     if(argc < 4){
         printf("Incorrect number of command line parameters, program terminating\n");
@@ -21,7 +21,7 @@ int main(int argc, char** argv){
         printf("Argument 3 must either be 'file' or 'stdout', program terminating\n");
         return 1;
     }
-
+    
     //If it's 'stdout', that's the last argument
     if(strcmp(argv[3], "stdout") == 0){
         if(argc != 4){
@@ -37,7 +37,7 @@ int main(int argc, char** argv){
         }
     }
     
-    //Creating struct object for plain/cipher text file
+    //Creating struct object for plaintext/cipertext text file
     dynamicData* plainTextBuffObj = (dynamicData*) malloc(sizeof(dynamicData));
     plainTextBuffObj->buff = (char*) malloc(INITIAL_CAPACITY);
     plainTextBuffObj->fullCounter = 0;
@@ -58,7 +58,7 @@ int main(int argc, char** argv){
     keyBuffObj->finishedBool = 0;
     keyBuffObj->readMutex = 0;
     keyBuffObj->errorQuiteBool = 0;
-
+    
     //Struct object that contains write info
     writeInfo* writeData = (writeInfo*) malloc(sizeof(writeInfo));
     if(strcmp(argv[3], "stdout") == 0)

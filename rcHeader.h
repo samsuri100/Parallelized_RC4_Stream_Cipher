@@ -60,8 +60,7 @@ void *readFileStream(void *plainTextBuffObj){
 
     while(1){
         //Using fread to read from file into dynamic array, returns number of chars read
-        //fgets, fgetc do not work with binary data
-        //During decryption ciphertext is binary data
+        //fgets, fgetc do not work with binary data, during decryption ciphertext is binary data
         charRead = fread((buffObj->buff)+(buffObj->fullCounter), 1, incrementVar, fStream);
         //Un-Setting mutex, allows for external reading from other threads
         buffObj->readMutex = 1;
@@ -94,14 +93,13 @@ void *readFileStream(void *plainTextBuffObj){
     pthread_exit(NULL);
 }
 
-
 //Function deals with RC4 algorithm,
 //both in reading in the key file and generating the keystream
 //Function launches two threads, they run sequentially though
 void *rc4Algorithm(void* bufferTuple){
     pthread_t readKeyFile_ID, rc4GenerateKeyStream_ID;
     
-    //Wrapping struct objects in struct wrapper to pass into pthread_create
+    //Un-wrapping struct objects in struct wrapper
     allBuffers* bufferPair = (allBuffers*) bufferTuple;
     dynamicData* plainTextBuffObj = bufferPair->plainTextBufferPtr;
     dynamicData* keyBuffObj = bufferPair->keyBufferPtr;
@@ -109,11 +107,11 @@ void *rc4Algorithm(void* bufferTuple){
     
     //Launching thread to read in the key file
     pthread_create(&readKeyFile_ID, NULL, readFileStream, keyBuffObj);
-    //Not proceeding to next thread until finished
+    //Not proceeding to the next thread until readFileStream thread is finished
     pthread_join(readKeyFile_ID, NULL);
 
-    //If key file could not be opened or was empty, or, 
-    //the plain/cipher text file could not be opened or was empty
+    //If the key file could not be opened or was empty, or, 
+    //the plaintext/ciphertext text file could not be opened or was empty
     //need to inform current thread to quite
     if((keyBuffObj->errorQuiteBool == 1) || (plainTextBuffObj->errorQuiteBool == 1))
         pthread_exit(NULL);
@@ -145,7 +143,7 @@ void *generateKeyStream(void* keyBuffer){
 
     //Key must be between 5 and 256 bytes, if not, terminating program
     if((keyLength < 5) || (keyLength > 256)){
-        printf("Encryption key must be between 5 and 256 Bytes, program terminating\n");
+        printf("Encryption key must be between 5 and 256 bytes, program terminating\n");
         //Letting other threads know to quite
         keyBuffObj->errorQuiteBool = 1;
         pthread_exit(NULL);
@@ -180,7 +178,7 @@ void *generateKeyStream(void* keyBuffer){
     //Using object for key stream data
     free(keyBuffObj->buff);
     
-    //Buff holds the key stream
+    //buff member variable holds the key stream
     keyBuffObj->buff = (char*) malloc(INITIAL_CAPACITY);
     keyBuffObj->fullCounter = 0;
     keyBuffObj->currentCapacity = INITIAL_CAPACITY;
@@ -202,7 +200,7 @@ void *generateKeyStream(void* keyBuffer){
         //Writing key stream byte to buffer
         writeToDynamicBuffer(keyBuffObj, s[modulo((int)s[i] + (int)s[j], 256)]);
 
-        //Stop generating key stream when notified by writeOutput to stop
+        //Stop generating key stream when notified by writeOutput thread to stop
         if(keyBuffObj->finishedBool == 1)
             break;
     }
@@ -210,7 +208,7 @@ void *generateKeyStream(void* keyBuffer){
     pthread_exit(NULL);
 }
 
-//Function XOR's plain/cipher text and key stream to encrypt or decrypt data
+//Function XOR's plaintext/ciphertext and key stream to encrypt or decrypt data
 //Either writes data to stdout or to a specified file
 void *writeOutput(void* multipleBuffers){
     int i = 0;
@@ -218,6 +216,7 @@ void *writeOutput(void* multipleBuffers){
     char fileBool = 0;
     FILE *writeStream;
 
+    //Un-wrapping struct objects in struct wrapper
     allBuffers* mulBufs = (allBuffers*) multipleBuffers;
     dynamicData* ptBuffObj = mulBufs->plainTextBufferPtr;
     dynamicData* keyBuffObj = mulBufs->keyBufferPtr;
@@ -232,7 +231,7 @@ void *writeOutput(void* multipleBuffers){
     }
 
     while(1){
-        //If readFileStream or rc4Algorithm threads could not be opened or were empty
+        //If plaintext/ciphertext text files or key text file could not be opened or were empty
         //Or if the key was not the proper byte length, informing current thread to quite
         if((ptBuffObj->errorQuiteBool == 1) || (keyBuffObj->errorQuiteBool == 1)){
             //Removing file if created by the program
@@ -241,7 +240,7 @@ void *writeOutput(void* multipleBuffers){
             pthread_exit(NULL);
         }
 
-        //Only reading when plain/ciphertext and keystream are not having their
+        //Only reading when plaintext/ciphertext and key stream are not having their
         //memory reallocated, or else memory corruption would occur
         while((ptBuffObj->readMutex == 1) && (keyBuffObj->readMutex == 2)){
             //Writing to stdout
@@ -252,7 +251,7 @@ void *writeOutput(void* multipleBuffers){
                 fputc((keyBuffObj->buff[i])^(ptBuffObj->buff[i]), writeStream);
             
             ++i;
-            //Waiting for keystream and plaintext/ciphertext to load more bytes
+            //Waiting for key stream and plaintext/ciphertext to load more bytes
             while(!((i < ptBuffObj->fullCounter) && (i < keyBuffObj->fullCounter))){
                 //If we have reached the end of plaintext/ciphertext buffer
                 //and we are finished reading in that file, break loop
@@ -260,7 +259,7 @@ void *writeOutput(void* multipleBuffers){
                     //Letting generateKeyStream thread know to stop
                     keyBuffObj->finishedBool = 1;
                     breakBool = 1;
-                    //If file, close file
+                    //If writing to a file, close that file
                     if(fileBool == 1)
                         fclose(writeStream);
                     break;
