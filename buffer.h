@@ -15,6 +15,7 @@ typedef struct dynamicData{
     char* fileName;
     char finishedBool;
     char readMutex;
+    char errorQuiteBool;
 } dynamicData;
 
 void growBuff(dynamicData* buffObj){
