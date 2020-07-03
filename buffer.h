@@ -42,7 +42,7 @@ void writeToDynamicBuffer(dynamicData* keyBuffObj, char keyByte){
         growBuff(keyBuffObj);
     }
    
-    keyBuffObj->readMutex = 1;
+    keyBuffObj->readMutex = 2;
 
     keyBuffObj->buff[keyBuffObj->fullCounter] = keyByte;
     keyBuffObj->fullCounter += 1;

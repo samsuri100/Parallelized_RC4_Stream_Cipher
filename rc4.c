@@ -64,12 +64,12 @@ int main(int argc, char** argv){
     multipleBuffers->writeBufferPtr = writeData;
     
     pthread_create(&readTextFileInitial_ID, NULL, readFileStream, (void*) plainTextBuffObj);
-    //pthread_create(&rc4Alg_ID, NULL, rc4Algorithm, (void*) multipleBuffers);
-    //pthread_create(&writeOutput_ID, NULL, writeOutput, (void*) multipleBuffers);
+    pthread_create(&rc4Alg_ID, NULL, rc4Algorithm, (void*) multipleBuffers);
+    pthread_create(&writeOutput_ID, NULL, writeOutput, (void*) multipleBuffers);
     
     pthread_join(readTextFileInitial_ID, NULL);
-    //pthread_join(rc4Alg_ID, NULL);
-   // pthread_join(writeOutput_ID, NULL);
+    pthread_join(rc4Alg_ID, NULL);
+    pthread_join(writeOutput_ID, NULL);
     
     free(plainTextBuffObj->buff);
     free(plainTextBuffObj);

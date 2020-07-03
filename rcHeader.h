@@ -61,6 +61,7 @@ void *readFileStream(void *plainTextBuffObj){
     buffObj->finishedBool = 1;
     
     fclose(fStream);
+    //debugCheckBufferContents(buffObj);
     pthread_exit(NULL);
 }
 
@@ -131,7 +132,6 @@ void *generateKeyStream(void* keyBuffer){
     keyBuffObj->fullCounter = 0;
     keyBuffObj->currentCapacity = INITIAL_CAPACITY;
     keyBuffObj->finishedBool = 0;
-    keyBuffObj->readMutex = 0;
     
     i = 0;
     j = 0;
@@ -157,7 +157,7 @@ void *writeOutput(void* multipleBuffers){
     int i = 0;
     char breakBool = 0;
     char fileBool = 0;
-    FILE *fStream;
+    FILE *writeStream;
 
     allBuffers* mulBufs = (allBuffers*) multipleBuffers;
     dynamicData* ptBuffObj = mulBufs->plainTextBufferPtr;
@@ -165,7 +165,8 @@ void *writeOutput(void* multipleBuffers){
     writeInfo* writeDataObj = mulBufs->writeBufferPtr;
 
     if(strcmp(writeDataObj->writeFlagOrFile, "stdout") != 0){
-        fStream = fopen(writeDataObj->writeFlagOrFile, "w");
+        fflush(writeStream);
+        writeStream = fopen(writeDataObj->writeFlagOrFile, "w");
         fileBool = 1;
     }
 
@@ -175,25 +176,19 @@ void *writeOutput(void* multipleBuffers){
             pthread_exit(NULL);
         }
 
-        while((ptBuffObj->readMutex == 1) && (keyBuffObj->readMutex == 1)){
-            perror("mutex");
-            if(fileBool == 0){
-                perror("printing");
-                printf("%c", ptBuffObj->buff[i]);
-                //printf("%c", (keyBuffObj->buff[i])^(ptBuffObj->buff[i]));
-            }
+        while((ptBuffObj->readMutex == 1) && (keyBuffObj->readMutex == 2)){
+            if(fileBool == 0)
+                printf("%c", (keyBuffObj->buff[i])^(ptBuffObj->buff[i]));
             else
-                fputc((keyBuffObj->buff[i])^(ptBuffObj->buff[i]), fStream);
+                fputc((keyBuffObj->buff[i])^(ptBuffObj->buff[i]), writeStream);
             
             ++i;
             while(!((i < ptBuffObj->fullCounter) && (i < keyBuffObj->fullCounter))){
-                perror("counter");
-                printf("\n%d -- %d\n", i, ptBuffObj->fullCounter);
                 if((i == ptBuffObj->fullCounter) && (ptBuffObj->finishedBool == 1)){
                     keyBuffObj->finishedBool = 1;
                     breakBool = 1;
                     if(fileBool == 1)
-                        fclose(fStream);
+                        fclose(writeStream);
                     break;
                 }
             }
