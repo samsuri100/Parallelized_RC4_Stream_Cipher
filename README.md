@@ -37,7 +37,7 @@ gcc rc4.c -o rc4 -lpthread
 #### STDOUT Example:
 ```
 ./rc4 taleOfTwoCitiesExample.txt key.txt stdout > CT.txt
-./rc4 CT.txt key.txt STDOUT > PT.txt
+./rc4 CT.txt key.txt stdout > PT.txt
 ```
 #### File Example:
 ```
