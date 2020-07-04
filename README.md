@@ -31,12 +31,12 @@ gcc rc4.c -o rc4 -lpthread
 ```
 #### Execution Format:
 ```
-./rc4 <plaintext/ciphertext file> <key file> <STDOUT>
+./rc4 <plaintext/ciphertext file> <key file> <stdout>
 ./rc4 <plaintext/ciphertext file> <key file> <file> <file name>
 ```
 #### STDOUT Example:
 ```
-./rc4 taleOfTwoCitiesExample.txt key.txt STDOUT > CT.txt
+./rc4 taleOfTwoCitiesExample.txt key.txt stdout > CT.txt
 ./rc4 CT.txt key.txt STDOUT > PT.txt
 ```
 #### File Example:
